@@ -6,6 +6,19 @@
 
 # PhotoDNA
 
+photo_dna/
+  ├─ __init__.py
+  ├─ main.py
+  ├─ constants.py
+  ├─ image_matcher.py
+  ├─ browser_utils.py
+  ├─ vk_utils.py
+  ├─ search_utils.py
+  ├─ utils.py
+  ├─ processing.py
+  └─ gui.py
+
+
 ## Установка
 
 1. **Клонирование репозитория:**
