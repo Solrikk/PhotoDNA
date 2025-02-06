@@ -2,7 +2,6 @@
 [![GitHub license](https://img.shields.io/github/license/Solrikk/PhotoDNA?style=flat&logo=github)](https://github.com/Solrikk/PhotoDNA/blob/main/LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.7%2B-blue?style=flat&logo=python)](https://www.python.org)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange?style=flat&logo=tensorflow)](https://www.tensorflow.org)
-[![Commit Activity](https://img.shields.io/github/commit-activity/m/Solrikk/PhotoDNA?style=flat)](https://github.com/Solrikk/PhotoDNA/commits/main)
 
 
 # PhotoDNA
