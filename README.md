@@ -1,3 +1,12 @@
+[![GitHub forks](https://img.shields.io/github/forks/Solrikk/PhotoDNA?style=flat&logo=github)](https://github.com/Solrikk/PhotoDNA/network)
+[![GitHub stars](https://img.shields.io/github/stars/Solrikk/PhotoDNA?style=flat&logo=github)](https://github.com/Solrikk/PhotoDNA/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/Solrikk/PhotoDNA?style=flat&logo=github)](https://github.com/Solrikk/PhotoDNA/issues)
+[![GitHub license](https://img.shields.io/github/license/Solrikk/PhotoDNA?style=flat&logo=github)](https://github.com/Solrikk/PhotoDNA/blob/main/LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.7%2B-blue?style=flat&logo=python)](https://www.python.org)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange?style=flat&logo=tensorflow)](https://www.tensorflow.org)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/Solrikk/PhotoDNA?style=flat)](https://github.com/Solrikk/PhotoDNA/commits/main)
+
+
 # PhotoDNA
 
 ## Установка
@@ -5,7 +14,7 @@
 1. **Клонирование репозитория:**
 
    ```bash
-   git clone https://github.com/your_username/PhotoDNA.git
+   git clone https://github.com/Solrikk/PhotoDNA.git
    cd PhotoDNA
    ```
 2. **Создание виртуального окружения:**
