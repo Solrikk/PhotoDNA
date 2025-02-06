@@ -6,6 +6,7 @@
 
 # PhotoDNA
 
+```
 photo_dna/
   ├─ __init__.py
   ├─ main.py
@@ -17,7 +18,7 @@ photo_dna/
   ├─ utils.py
   ├─ processing.py
   └─ gui.py
-
+```
 
 ## Установка
 
