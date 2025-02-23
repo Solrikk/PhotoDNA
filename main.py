@@ -618,6 +618,28 @@ def extract_vk_photo_url(driver, photo_url):
         return None
 
 
+def process_image_chunk(photo_urls_chunk, matcher, driver, all_data, record_counter):
+    for photo_url in photo_urls_chunk:
+        try:
+            img_url = extract_vk_photo_url(driver, photo_url)
+            if not img_url:
+                continue
+            response = requests.get(img_url, timeout=10)
+            img = Image.open(BytesIO(response.content)).convert('RGB')
+            temp_image_path = f"temp_image_{hash(photo_url)}.jpg"
+            img.save(temp_image_path)
+            source_embedding = matcher.get_embedding(temp_image_path)
+            if source_embedding is None:
+                os.remove(temp_image_path)
+                continue
+            search_yandex_image(driver, temp_image_path, matcher,
+                              source_embedding, f"Фото", all_data, 
+                              record_counter, img_url)
+            os.remove(temp_image_path)
+        except Exception as e:
+            logging.error(f"Ошибка при обработке фото {photo_url}: {str(e)}")
+            continue
+
 def process_images(album_url):
     if not (album_url.startswith("https://vk.com/album")
             or album_url.startswith("https://vk.com/photo")):
@@ -806,6 +828,11 @@ def start_processing(album_url):
         cleanup_temp_files()
 
 
+def update_progress(progress_var, progress_label, current, total):
+    progress = int((current / total) * 100)
+    progress_var.set(progress)
+    progress_label.config(text=f"Обработано: {current}/{total} ({progress}%)")
+    
 def create_gui():
     root = tk.Tk()
     root.title("PhotoDNA - Анализ схожих изображений")
@@ -944,3 +971,38 @@ def cleanup_temp_files():
                 pass
     except Exception as e:
         logging.error(f"Ошибка при очистке временных файлов: {str(e)}")
+def retry_with_backoff(func, max_retries=3, initial_delay=1):
+    def wrapper(*args, **kwargs):
+        delay = initial_delay
+        for attempt in range(max_retries):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise
+                logging.warning(f"Попытка {attempt + 1} не удалась: {str(e)}")
+                time.sleep(delay)
+                delay *= 2
+    return wrapper
+class ResultsCache:
+    def __init__(self, cache_file="search_cache.json"):
+        self.cache_file = cache_file
+        self.cache = self._load_cache()
+        
+    def _load_cache(self):
+        try:
+            with open(self.cache_file, 'r') as f:
+                return json.load(f)
+        except:
+            return {}
+            
+    def save_cache(self):
+        with open(self.cache_file, 'w') as f:
+            json.dump(self.cache, f)
+            
+    def get_result(self, url_hash):
+        return self.cache.get(url_hash)
+        
+    def add_result(self, url_hash, result):
+        self.cache[url_hash] = result
+        self.save_cache()
