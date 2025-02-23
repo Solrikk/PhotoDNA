@@ -505,27 +505,29 @@ def search_yandex_image(driver, image_path, matcher, source_embedding,
 def vk_login(driver):
     try:
         wait = WebDriverWait(driver, WAIT_TIME)
-        
+        #####################################
         # Ждем кнопку "Войти другим способом"
+        #####################################
         other_login_btn = wait.until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Войти другим способом')]")))
         other_login_btn.click()
-        
+        #####################################
         # Ввод номера телефона
+        #####################################
         phone_input = wait.until(
             EC.presence_of_element_located((By.NAME, "login")))
         phone_input.clear()
         phone_input.send_keys("+79275088557")
-        
+        #####################################
         # Ждем и вводим пароль
+        #####################################
         password_input = wait.until(
             EC.presence_of_element_located((By.NAME, "password")))
         password_input.send_keys("straleglans-qwE1solrikksolrikk")
         password_input.submit()
-        
-        # Ждем успешной авторизации
+
         time.sleep(5)
-        
+
     except Exception as e:
         logging.error(f"Ошибка при авторизации ВКонтакте: {str(e)}")
         raise
@@ -534,20 +536,22 @@ def extract_vk_album_photos(driver, album_url):
     try:
         driver.get(album_url)
         logging.info(f"Переход на страницу альбома ВКонтакте: {album_url}")
-        
+        #####################################
         # Проверяем необходимость авторизации
+        #####################################
         try:
             login_button = driver.find_element(By.XPATH, "//button[contains(., 'Войти другим способом')]")
             if login_button:
                 logging.info("Требуется авторизация ВКонтакте")
                 vk_login(driver)
+                #####################################
                 # Возвращаемся на страницу альбома после авторизации
+                #####################################
                 driver.get(album_url)
         except:
             logging.info("Авторизация не требуется")
-            
+
         wait = WebDriverWait(driver, WAIT_TIME)
-        # Ждем загрузку альбома
         time.sleep(10)
         wait.until(
             EC.presence_of_element_located(
@@ -556,7 +560,9 @@ def extract_vk_album_photos(driver, album_url):
         last_height = driver.execute_script(
             "return document.body.scrollHeight")
         scroll_attempt = 0
+        #####################################
         max_scroll_attempts = 8  # Уменьшено количество попыток прокрутки
+        #####################################
         while scroll_attempt < max_scroll_attempts:
             driver.execute_script(
                 "window.scrollTo(0, document.body.scrollHeight);")
@@ -784,13 +790,13 @@ def start_processing(album_url):
             "Внимание",
             "Пожалуйста, введите ссылку на альбом или фотографию ВКонтакте.")
         return
-    
+
     if not (album_url.startswith('https://vk.com/album') or album_url.startswith('https://vk.com/photo')):
         messagebox.showwarning(
             "Ошибка",
             "Неверный формат ссылки. Используйте ссылку на альбом или фотографию ВКонтакте.")
         return
-        
+
     try:
         process_images(album_url)
     except Exception as e:
@@ -859,16 +865,16 @@ def create_gui():
                          foreground="#ffffff",
                          insertcolor="#ffffff",
                          borderwidth=0)
-    
+
     entry_frame = ttk.Frame(input_frame, style="Main.TFrame")
     entry_frame.pack(pady=(0, 5))
-    
+
     entry = ttk.Entry(entry_frame, 
                      width=80, 
                      font=("Montserrat", 11),
                      style="Custom.TEntry")
     entry.pack(pady=(0, 5), ipady=8)
-    
+
     def show_context_menu(event):
         context_menu.tk_popup(event.x_root, event.y_root)
 
