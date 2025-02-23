@@ -1,4 +1,5 @@
 import os
+import json
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
@@ -644,7 +645,7 @@ def process_image_chunk(photo_urls_chunk, matcher, driver, all_data,
             continue
 
 
-def process_images(album_url, vk_login, vk_password):
+def process_images(album_url, vk_login, vk_password, show_completion=True):
     if not (album_url.startswith("https://vk.com/album")
             or album_url.startswith("https://vk.com/photo")):
         logging.error(
@@ -797,12 +798,16 @@ def process_images(album_url, vk_login, vk_password):
                     for col in range(1, len(df.columns) + 1):
                         cell = worksheet.cell(row=row, column=col)
                         cell.border = thin_border
-            logging.info(f"Данные успешно записаны в {excel_file}")
-            messagebox.showinfo("Завершено",
-                                f"Данные успешно записаны в {excel_file}")
+            if show_completion:
+                logging.info(f"Данные успешно записаны в {excel_file}")
+                messagebox.showinfo("Завершено",
+                                    f"Данные успешно записаны в {excel_file}")
+            else:
+                logging.info("Обработка завершена без вывода сообщения.")
         else:
-            logging.info("Нет данных для записи.")
-            messagebox.showinfo("Завершено", "Нет данных для записи.")
+            if show_completion:
+                logging.info("Нет данных для записи.")
+                messagebox.showinfo("Завершено", "Нет данных для записи.")
     except Exception as e:
         logging.error(f"Фатальная ошибка: {str(e)}")
         messagebox.showerror("Ошибка", f"Произошла ошибка: {str(e)}")
@@ -885,14 +890,14 @@ def create_gui():
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 global RESULTS_FILE
                 RESULTS_FILE = f'results_{timestamp}_{idx+1}.xlsx'
-                process_images(url, vk_login, vk_password)
+                process_images(url, vk_login, vk_password, show_completion=False)
             except Exception as e:
                 logging.error(f"Ошибка при обработке ссылки {url}: {str(e)}")
                 continue
 
         progress.stop()
         start_button.configure(state='normal')
-        messagebox.showinfo("Завершено", "Обработка всех ссылок завершена")
+        messagebox.showinfo("Завершено", f"Обработка всех {len(urls_list)} ссылок завершена")
 
     root.configure(bg="#1e1e2e")
     root.resizable(False, False)
@@ -1067,14 +1072,14 @@ def create_gui():
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 global RESULTS_FILE
                 RESULTS_FILE = f'results_{timestamp}_{idx+1}.xlsx'
-                process_images(url, vk_login, vk_password)
+                process_images(url, vk_login, vk_password, show_completion=False)
             except Exception as e:
                 logging.error(f"Ошибка при обработке ссылки {url}: {str(e)}")
                 continue
 
         progress.stop()
         start_button.configure(state='normal')
-        messagebox.showinfo("Завершено", "Обработка всех ссылок завершена")
+        messagebox.showinfo("Завершено", f"Обработка всех {len(urls_list)} ссылок завершена")
 
     def paste(event):
         try:
