@@ -556,7 +556,7 @@ def extract_vk_album_photos(driver, album_url):
         last_height = driver.execute_script(
             "return document.body.scrollHeight")
         scroll_attempt = 0
-        max_scroll_attempts = 50  # Increased to load more photos
+        max_scroll_attempts = 8  # Уменьшено количество попыток прокрутки
         while scroll_attempt < max_scroll_attempts:
             driver.execute_script(
                 "window.scrollTo(0, document.body.scrollHeight);")
