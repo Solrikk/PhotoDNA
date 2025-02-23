@@ -836,7 +836,8 @@ def update_progress(progress_var, progress_label, current, total):
 def create_gui():
     root = tk.Tk()
     root.title("PhotoDNA - Анализ схожих изображений")
-    root.geometry("1000x800")
+    root.geometry("800x700")
+    root.configure(bg="#1a1b26")
     
     # Создаем список для хранения ссылок
     urls_list = []
@@ -889,19 +890,28 @@ def create_gui():
     style = ttk.Style()
     style.theme_use('default')
     style.configure("TLabel",
-                       font=("Montserrat", 12),
-                       background="#1e1e2e",
-                       foreground="#ffffff")
+                   font=("Segoe UI", 11),
+                   background="#1a1b26",
+                   foreground="#a9b1d6")
     style.configure("TEntry",
-                       font=("Montserrat", 11),
-                       fieldbackground="#2d2d3f",
-                       foreground="#ffffff",
-                       insertcolor="#ffffff")
+                   font=("Segoe UI", 11),
+                   fieldbackground="#24283b",
+                   foreground="#c0caf5",
+                   insertcolor="#c0caf5")
     style.configure("TButton",
-                       font=("Montserrat", 11, "bold"),
-                       padding=12,
-                       background="#7c3aed",
-                       foreground="#ffffff")
+                   font=("Segoe UI", 11, "bold"),
+                   padding=10,
+                   background="#7aa2f7",
+                   foreground="#ffffff")
+    style.configure("Header.TLabel",
+                   font=("Segoe UI", 24, "bold"),
+                   foreground="#c0caf5",
+                   background="#1a1b26")
+    style.configure("Main.TFrame",
+                   background="#1a1b26")
+    style.configure("Blue.Horizontal.TProgressbar",
+                   background="#7aa2f7",
+                   troughcolor="#24283b")
     style.configure("Header.TLabel",
                        font=("Montserrat", 28, "bold"),
                        foreground="#ffffff",
@@ -912,18 +922,18 @@ def create_gui():
                        background="#7c3aed",
                        troughcolor="#2d2d3f")
 
-    main_frame = ttk.Frame(root, padding=30, style="Main.TFrame")
+    main_frame = ttk.Frame(root, padding=25, style="Main.TFrame")
     main_frame.pack(fill=tk.BOTH, expand=True)
 
     header = ttk.Label(main_frame, text="PhotoDNA", style="Header.TLabel")
-    header.pack(pady=(0, 5))
+    header.pack(pady=(0, 8))
 
     subheader = ttk.Label(main_frame,
-                          text="Умный поиск и анализ изображений",
-                          font=("Segoe UI", 12),
-                          background="#f0f2f5",
-                          foreground="#666666")
-    subheader.pack(pady=(0, 20))
+                         text="Умный поиск и анализ изображений",
+                         font=("Segoe UI", 12),
+                         background="#1a1b26",
+                         foreground="#7aa2f7")
+    subheader.pack(pady=(0, 25))
 
     input_frame = ttk.Frame(main_frame, style="Main.TFrame")
     input_frame.pack(fill=tk.X, pady=10)
@@ -966,15 +976,23 @@ def create_gui():
     urls_frame = ttk.Frame(input_frame, style="Main.TFrame")
     urls_frame.pack(fill=tk.X, pady=10)
     
-    urls_listbox = tk.Listbox(urls_frame, width=80, height=6, font=("Montserrat", 11))
-    urls_listbox.pack(side=tk.LEFT, fill=tk.X)
+    urls_listbox = tk.Listbox(urls_frame, 
+                             width=70, 
+                             height=6, 
+                             font=("Segoe UI", 11),
+                             bg="#24283b",
+                             fg="#c0caf5",
+                             selectbackground="#7aa2f7",
+                             selectforeground="#ffffff",
+                             borderwidth=0)
+    urls_listbox.pack(side=tk.LEFT, fill=tk.X, padx=(0, 10))
     
     scrollbar = ttk.Scrollbar(urls_frame, orient=tk.VERTICAL, command=urls_listbox.yview)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     urls_listbox.configure(yscrollcommand=scrollbar.set)
     
-    remove_button = ttk.Button(urls_frame, text="Удалить", command=remove_url)
-    remove_button.pack(side=tk.RIGHT, padx=5)
+    remove_button = ttk.Button(urls_frame, text="Удалить", command=remove_url, width=12)
+    remove_button.pack(side=tk.RIGHT)
 
     def show_context_menu(event):
         context_menu.tk_popup(event.x_root, event.y_root)
