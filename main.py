@@ -314,7 +314,7 @@
                 last_height = driver.execute_script(
                     "return document.body.scrollHeight")
                 scroll_attempt = 0
-                max_scroll_attempts = 15
+                max_scroll_attempts = 8
                 while scroll_attempt < max_scroll_attempts:
                     current_height = driver.execute_script(
                         "return window.pageYOffset;")
