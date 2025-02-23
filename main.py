@@ -1019,18 +1019,35 @@ def create_gui():
     progress.pack()
 
     def on_start():
-        album_url = entry.get().strip()
-        if album_url:
-            start_button.configure(state='disabled')
-            progress.start()
-            root.update_idletasks()
-            start_processing(album_url)
-            progress.stop()
-            start_button.configure(state='normal')
-        else:
+        if not urls_list:
             messagebox.showwarning(
                 "PhotoDNA",
-                "Пожалуйста, введите ссылку на альбом или фотографию.")
+                "Пожалуйста, добавьте хотя бы одну ссылку на альбом или фотографию.")
+            return
+            
+        vk_login = login_entry.get().strip()
+        vk_password = password_entry.get().strip()
+        
+        if not vk_login or not vk_password:
+            messagebox.showwarning("PhotoDNA", "Введите логин и пароль ВКонтакте")
+            return
+            
+        start_button.configure(state='disabled')
+        progress.start()
+        
+        for idx, url in enumerate(urls_list):
+            try:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                global RESULTS_FILE
+                RESULTS_FILE = f'results_{timestamp}_{idx+1}.xlsx'
+                process_images(url, vk_login, vk_password)
+            except Exception as e:
+                logging.error(f"Ошибка при обработке ссылки {url}: {str(e)}")
+                continue
+                
+        progress.stop()
+        start_button.configure(state='normal')
+        messagebox.showinfo("Завершено", "Обработка всех ссылок завершена")
 
     def paste(event):
         try:
