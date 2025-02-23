@@ -37,6 +37,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 import multiprocessing
+import json
 
 WAIT_TIME = 10
 RESULTS_FILE = 'results.xlsx'
@@ -832,45 +833,45 @@ def update_progress(progress_var, progress_label, current, total):
     progress = int((current / total) * 100)
     progress_var.set(progress)
     progress_label.config(text=f"Обработано: {current}/{total} ({progress}%)")
-    
+
 def create_gui():
     root = tk.Tk()
     root.title("PhotoDNA - Анализ схожих изображений")
     root.geometry("800x700")
     root.configure(bg="#1a1b26")
-    
+
     # Создаем список для хранения ссылок
     urls_list = []
-    
+
     def add_url():
         url = entry.get().strip()
         if url:
             urls_list.append(url)
             urls_listbox.insert(tk.END, url)
             entry.delete(0, tk.END)
-            
+
     def remove_url():
         selection = urls_listbox.curselection()
         if selection:
             index = selection[0]
             urls_list.pop(index)
             urls_listbox.delete(index)
-            
+
     def process_all_urls():
         if not urls_list:
             messagebox.showwarning("PhotoDNA", "Добавьте хотя бы одну ссылку")
             return
-            
+
         vk_login = login_entry.get().strip()
         vk_password = password_entry.get().strip()
-        
+
         if not vk_login or not vk_password:
             messagebox.showwarning("PhotoDNA", "Введите логин и пароль ВКонтакте")
             return
-            
+
         start_button.configure(state='disabled')
         progress.start()
-        
+
         for idx, url in enumerate(urls_list):
             try:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -880,7 +881,7 @@ def create_gui():
             except Exception as e:
                 logging.error(f"Ошибка при обработке ссылки {url}: {str(e)}")
                 continue
-                
+
         progress.stop()
         start_button.configure(state='normal')
         messagebox.showinfo("Завершено", "Обработка всех ссылок завершена")
@@ -953,29 +954,29 @@ def create_gui():
     # Фрейм для логина/пароля
     auth_frame = ttk.Frame(input_frame, style="Main.TFrame")
     auth_frame.pack(pady=(0, 10))
-    
+
     ttk.Label(auth_frame, text="Логин ВК:", font=("Segoe UI", 11)).pack(side=tk.LEFT, padx=5)
     login_entry = ttk.Entry(auth_frame, width=30, font=("Montserrat", 11), style="Custom.TEntry")
     login_entry.pack(side=tk.LEFT, padx=5)
-    
+
     ttk.Label(auth_frame, text="Пароль ВК:", font=("Segoe UI", 11)).pack(side=tk.LEFT, padx=5)
     password_entry = ttk.Entry(auth_frame, width=30, font=("Montserrat", 11), style="Custom.TEntry", show="*")
     password_entry.pack(side=tk.LEFT, padx=5)
-    
+
     # Фрейм для ввода ссылок
     entry_frame = ttk.Frame(input_frame, style="Main.TFrame")
     entry_frame.pack(pady=(0, 5))
 
     entry = ttk.Entry(entry_frame, width=80, font=("Montserrat", 11), style="Custom.TEntry")
     entry.pack(side=tk.LEFT, pady=(0, 5), ipady=8)
-    
+
     add_button = ttk.Button(entry_frame, text="+", width=3, command=add_url)
     add_button.pack(side=tk.LEFT, padx=5)
-    
+
     # Список ссылок
     urls_frame = ttk.Frame(input_frame, style="Main.TFrame")
     urls_frame.pack(fill=tk.X, pady=10)
-    
+
     urls_listbox = tk.Listbox(urls_frame, 
                              width=70, 
                              height=6, 
@@ -986,11 +987,11 @@ def create_gui():
                              selectforeground="#ffffff",
                              borderwidth=0)
     urls_listbox.pack(side=tk.LEFT, fill=tk.X, padx=(0, 10))
-    
+
     scrollbar = ttk.Scrollbar(urls_frame, orient=tk.VERTICAL, command=urls_listbox.yview)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     urls_listbox.configure(yscrollcommand=scrollbar.set)
-    
+
     remove_button = ttk.Button(urls_frame, text="Удалить", command=remove_url, width=12)
     remove_button.pack(side=tk.RIGHT)
 
@@ -1024,17 +1025,17 @@ def create_gui():
                 "PhotoDNA",
                 "Пожалуйста, добавьте хотя бы одну ссылку на альбом или фотографию.")
             return
-            
+
         vk_login = login_entry.get().strip()
         vk_password = password_entry.get().strip()
-        
+
         if not vk_login or not vk_password:
             messagebox.showwarning("PhotoDNA", "Введите логин и пароль ВКонтакте")
             return
-            
+
         start_button.configure(state='disabled')
         progress.start()
-        
+
         for idx, url in enumerate(urls_list):
             try:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -1044,7 +1045,7 @@ def create_gui():
             except Exception as e:
                 logging.error(f"Ошибка при обработке ссылки {url}: {str(e)}")
                 continue
-                
+
         progress.stop()
         start_button.configure(state='normal')
         messagebox.showinfo("Завершено", "Обработка всех ссылок завершена")
@@ -1096,21 +1097,21 @@ class ResultsCache:
     def __init__(self, cache_file="search_cache.json"):
         self.cache_file = cache_file
         self.cache = self._load_cache()
-        
+
     def _load_cache(self):
         try:
             with open(self.cache_file, 'r') as f:
                 return json.load(f)
         except:
             return {}
-            
+
     def save_cache(self):
         with open(self.cache_file, 'w') as f:
             json.dump(self.cache, f)
-            
+
     def get_result(self, url_hash):
         return self.cache.get(url_hash)
-        
+
     def add_result(self, url_hash, result):
         self.cache[url_hash] = result
         self.save_cache()
