@@ -747,7 +747,8 @@ def process_images(album_url):
                                 cell.hyperlink = url
                                 cell.style = "Hyperlink"
                 if 'Схожесть' in df.columns:
-                    similarity_col = df.columns.get_loc('Схожесть') + 1                    for row in range(2, len(df) + 2):
+                    similarity_col = df.columns.get_loc('Схожесть') + 1
+                    for row in range(2, len(df) + 2):
                         similarity_value = df.iloc[row - 2]['Схожесть']
                         try:
                             similarity_percent = float(similarity_value)
