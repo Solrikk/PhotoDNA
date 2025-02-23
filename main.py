@@ -742,7 +742,19 @@ def start_processing(album_url):
             "Внимание",
             "Пожалуйста, введите ссылку на альбом или фотографию ВКонтакте.")
         return
-    process_images(album_url)
+    
+    if not (album_url.startswith('https://vk.com/album') or album_url.startswith('https://vk.com/photo')):
+        messagebox.showwarning(
+            "Ошибка",
+            "Неверный формат ссылки. Используйте ссылку на альбом или фотографию ВКонтакте.")
+        return
+        
+    try:
+        process_images(album_url)
+    except Exception as e:
+        logging.error(f"Критическая ошибка при обработке: {str(e)}")
+        messagebox.showerror("Ошибка", "Произошла ошибка при обработке изображений")
+        cleanup_temp_files()
 
 
 def create_gui():
@@ -846,3 +858,14 @@ def create_gui():
 
 if __name__ == "__main__":
     create_gui()
+def cleanup_temp_files():
+    try:
+        import glob
+        for temp_file in glob.glob("temp_image_*.jpg"):
+            try:
+                os.remove(temp_file)
+                logging.info(f"Удален временный файл: {temp_file}")
+            except:
+                pass
+    except Exception as e:
+        logging.error(f"Ошибка при очистке временных файлов: {str(e)}")
