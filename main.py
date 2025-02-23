@@ -37,7 +37,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 import multiprocessing
-import json
 
 WAIT_TIME = 10
 RESULTS_FILE = 'results.xlsx'
@@ -453,8 +452,8 @@ def collect_similar_images(driver, wait, matcher, source_embedding, image_name,
 
 
 def search_yandex_image(driver, image_path, matcher, source_embedding,
-                       image_name, data_list, record_counter,
-                       original_photo_url):
+                        image_name, data_list, record_counter,
+                        original_photo_url):
     try:
         driver.get('https://yandex.ru/images/')
         logging.info("Переход на Яндекс Картинки.")
@@ -510,7 +509,8 @@ def vk_login(driver):
         # Ждем кнопку "Войти другим способом"
         #####################################
         other_login_btn = wait.until(
-            EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Войти другим способом')]")))
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[contains(., 'Войти другим способом')]")))
         other_login_btn.click()
         #####################################
         # Ввод номера телефона
@@ -542,7 +542,8 @@ def extract_vk_album_photos(driver, album_url):
         # Проверяем необходимость авторизации
         #####################################
         try:
-            login_button = driver.find_element(By.XPATH, "//button[contains(., 'Войти другим способом')]")
+            login_button = driver.find_element(
+                By.XPATH, "//button[contains(., 'Войти другим способом')]")
             if login_button:
                 logging.info("Требуется авторизация ВКонтакте")
                 vk_login(driver)
@@ -619,7 +620,8 @@ def extract_vk_photo_url(driver, photo_url):
         return None
 
 
-def process_image_chunk(photo_urls_chunk, matcher, driver, all_data, record_counter):
+def process_image_chunk(photo_urls_chunk, matcher, driver, all_data,
+                        record_counter):
     for photo_url in photo_urls_chunk:
         try:
             img_url = extract_vk_photo_url(driver, photo_url)
@@ -634,12 +636,13 @@ def process_image_chunk(photo_urls_chunk, matcher, driver, all_data, record_coun
                 os.remove(temp_image_path)
                 continue
             search_yandex_image(driver, temp_image_path, matcher,
-                              source_embedding, f"Фото", all_data, 
-                              record_counter, img_url)
+                                source_embedding, f"Фото", all_data,
+                                record_counter, img_url)
             os.remove(temp_image_path)
         except Exception as e:
             logging.error(f"Ошибка при обработке фото {photo_url}: {str(e)}")
             continue
+
 
 def process_images(album_url, vk_login, vk_password):
     if not (album_url.startswith("https://vk.com/album")
@@ -815,17 +818,20 @@ def start_processing(album_url):
             "Пожалуйста, введите ссылку на альбом или фотографию ВКонтакте.")
         return
 
-    if not (album_url.startswith('https://vk.com/album') or album_url.startswith('https://vk.com/photo')):
+    if not (album_url.startswith('https://vk.com/album')
+            or album_url.startswith('https://vk.com/photo')):
         messagebox.showwarning(
             "Ошибка",
-            "Неверный формат ссылки. Используйте ссылку на альбом или фотографию ВКонтакте.")
+            "Неверный формат ссылки. Используйте ссылку на альбом или фотографию ВКонтакте."
+        )
         return
 
     try:
         process_images(album_url)
     except Exception as e:
         logging.error(f"Критическая ошибка при обработке: {str(e)}")
-        messagebox.showerror("Ошибка", "Произошла ошибка при обработке изображений")
+        messagebox.showerror("Ошибка",
+                             "Произошла ошибка при обработке изображений")
         cleanup_temp_files()
 
 
@@ -833,6 +839,7 @@ def update_progress(progress_var, progress_label, current, total):
     progress = int((current / total) * 100)
     progress_var.set(progress)
     progress_label.config(text=f"Обработано: {current}/{total} ({progress}%)")
+
 
 def create_gui():
     root = tk.Tk()
@@ -866,7 +873,8 @@ def create_gui():
         vk_password = password_entry.get().strip()
 
         if not vk_login or not vk_password:
-            messagebox.showwarning("PhotoDNA", "Введите логин и пароль ВКонтакте")
+            messagebox.showwarning("PhotoDNA",
+                                   "Введите логин и пароль ВКонтакте")
             return
 
         start_button.configure(state='disabled')
@@ -885,43 +893,42 @@ def create_gui():
         progress.stop()
         start_button.configure(state='normal')
         messagebox.showinfo("Завершено", "Обработка всех ссылок завершена")
+
     root.configure(bg="#1e1e2e")
     root.resizable(False, False)
 
     style = ttk.Style()
     style.theme_use('default')
     style.configure("TLabel",
-                   font=("Segoe UI", 11),
-                   background="#1a1b26",
-                   foreground="#a9b1d6")
+                    font=("Segoe UI", 11),
+                    background="#1a1b26",
+                    foreground="#a9b1d6")
     style.configure("TEntry",
-                   font=("Segoe UI", 11),
-                   fieldbackground="#24283b",
-                   foreground="#c0caf5",
-                   insertcolor="#c0caf5")
+                    font=("Segoe UI", 11),
+                    fieldbackground="#24283b",
+                    foreground="#c0caf5",
+                    insertcolor="#c0caf5")
     style.configure("TButton",
-                   font=("Segoe UI", 11, "bold"),
-                   padding=10,
-                   background="#7aa2f7",
-                   foreground="#ffffff")
+                    font=("Segoe UI", 11, "bold"),
+                    padding=10,
+                    background="#7aa2f7",
+                    foreground="#ffffff")
     style.configure("Header.TLabel",
-                   font=("Segoe UI", 24, "bold"),
-                   foreground="#c0caf5",
-                   background="#1a1b26")
-    style.configure("Main.TFrame",
-                   background="#1a1b26")
+                    font=("Segoe UI", 24, "bold"),
+                    foreground="#c0caf5",
+                    background="#1a1b26")
+    style.configure("Main.TFrame", background="#1a1b26")
     style.configure("Blue.Horizontal.TProgressbar",
-                   background="#7aa2f7",
-                   troughcolor="#24283b")
+                    background="#7aa2f7",
+                    troughcolor="#24283b")
     style.configure("Header.TLabel",
-                       font=("Montserrat", 28, "bold"),
-                       foreground="#ffffff",
-                       background="#1e1e2e")
-    style.configure("Main.TFrame",
-                       background="#1e1e2e")
+                    font=("Montserrat", 28, "bold"),
+                    foreground="#ffffff",
+                    background="#1e1e2e")
+    style.configure("Main.TFrame", background="#1e1e2e")
     style.configure("Blue.Horizontal.TProgressbar",
-                       background="#7c3aed",
-                       troughcolor="#2d2d3f")
+                    background="#7c3aed",
+                    troughcolor="#2d2d3f")
 
     main_frame = ttk.Frame(root, padding=25, style="Main.TFrame")
     main_frame.pack(fill=tk.BOTH, expand=True)
@@ -930,10 +937,10 @@ def create_gui():
     header.pack(pady=(0, 8))
 
     subheader = ttk.Label(main_frame,
-                         text="Умный поиск и анализ изображений",
-                         font=("Segoe UI", 12),
-                         background="#1a1b26",
-                         foreground="#7aa2f7")
+                          text="Умный поиск и анализ изображений",
+                          font=("Segoe UI", 12),
+                          background="#1a1b26",
+                          foreground="#7aa2f7")
     subheader.pack(pady=(0, 25))
 
     input_frame = ttk.Frame(main_frame, style="Main.TFrame")
@@ -946,28 +953,40 @@ def create_gui():
 
     entry_style = ttk.Style()
     entry_style.configure("Custom.TEntry",
-                         fieldbackground="#2d2d3f",
-                         foreground="#ffffff",
-                         insertcolor="#ffffff",
-                         borderwidth=0)
+                          fieldbackground="#2d2d3f",
+                          foreground="#ffffff",
+                          insertcolor="#ffffff",
+                          borderwidth=0)
 
     # Фрейм для логина/пароля
     auth_frame = ttk.Frame(input_frame, style="Main.TFrame")
     auth_frame.pack(pady=(0, 10))
 
-    ttk.Label(auth_frame, text="Логин ВК:", font=("Segoe UI", 11)).pack(side=tk.LEFT, padx=5)
-    login_entry = ttk.Entry(auth_frame, width=30, font=("Montserrat", 11), style="Custom.TEntry")
+    ttk.Label(auth_frame, text="Логин ВК:",
+              font=("Segoe UI", 11)).pack(side=tk.LEFT, padx=5)
+    login_entry = ttk.Entry(auth_frame,
+                            width=30,
+                            font=("Montserrat", 11),
+                            style="Custom.TEntry")
     login_entry.pack(side=tk.LEFT, padx=5)
 
-    ttk.Label(auth_frame, text="Пароль ВК:", font=("Segoe UI", 11)).pack(side=tk.LEFT, padx=5)
-    password_entry = ttk.Entry(auth_frame, width=30, font=("Montserrat", 11), style="Custom.TEntry", show="*")
+    ttk.Label(auth_frame, text="Пароль ВК:",
+              font=("Segoe UI", 11)).pack(side=tk.LEFT, padx=5)
+    password_entry = ttk.Entry(auth_frame,
+                               width=30,
+                               font=("Montserrat", 11),
+                               style="Custom.TEntry",
+                               show="*")
     password_entry.pack(side=tk.LEFT, padx=5)
 
     # Фрейм для ввода ссылок
     entry_frame = ttk.Frame(input_frame, style="Main.TFrame")
     entry_frame.pack(pady=(0, 5))
 
-    entry = ttk.Entry(entry_frame, width=80, font=("Montserrat", 11), style="Custom.TEntry")
+    entry = ttk.Entry(entry_frame,
+                      width=80,
+                      font=("Montserrat", 11),
+                      style="Custom.TEntry")
     entry.pack(side=tk.LEFT, pady=(0, 5), ipady=8)
 
     add_button = ttk.Button(entry_frame, text="+", width=3, command=add_url)
@@ -977,22 +996,27 @@ def create_gui():
     urls_frame = ttk.Frame(input_frame, style="Main.TFrame")
     urls_frame.pack(fill=tk.X, pady=10)
 
-    urls_listbox = tk.Listbox(urls_frame, 
-                             width=70, 
-                             height=6, 
-                             font=("Segoe UI", 11),
-                             bg="#24283b",
-                             fg="#c0caf5",
-                             selectbackground="#7aa2f7",
-                             selectforeground="#ffffff",
-                             borderwidth=0)
+    urls_listbox = tk.Listbox(urls_frame,
+                              width=70,
+                              height=6,
+                              font=("Segoe UI", 11),
+                              bg="#24283b",
+                              fg="#c0caf5",
+                              selectbackground="#7aa2f7",
+                              selectforeground="#ffffff",
+                              borderwidth=0)
     urls_listbox.pack(side=tk.LEFT, fill=tk.X, padx=(0, 10))
 
-    scrollbar = ttk.Scrollbar(urls_frame, orient=tk.VERTICAL, command=urls_listbox.yview)
+    scrollbar = ttk.Scrollbar(urls_frame,
+                              orient=tk.VERTICAL,
+                              command=urls_listbox.yview)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     urls_listbox.configure(yscrollcommand=scrollbar.set)
 
-    remove_button = ttk.Button(urls_frame, text="Удалить", command=remove_url, width=12)
+    remove_button = ttk.Button(urls_frame,
+                               text="Удалить",
+                               command=remove_url,
+                               width=12)
     remove_button.pack(side=tk.RIGHT)
 
     def show_context_menu(event):
@@ -1023,14 +1047,16 @@ def create_gui():
         if not urls_list:
             messagebox.showwarning(
                 "PhotoDNA",
-                "Пожалуйста, добавьте хотя бы одну ссылку на альбом или фотографию.")
+                "Пожалуйста, добавьте хотя бы одну ссылку на альбом или фотографию."
+            )
             return
 
         vk_login = login_entry.get().strip()
         vk_password = password_entry.get().strip()
 
         if not vk_login or not vk_password:
-            messagebox.showwarning("PhotoDNA", "Введите логин и пароль ВКонтакте")
+            messagebox.showwarning("PhotoDNA",
+                                   "Введите логин и пароль ВКонтакте")
             return
 
         start_button.configure(state='disabled')
@@ -1069,6 +1095,8 @@ def create_gui():
 
 if __name__ == "__main__":
     create_gui()
+
+
 def cleanup_temp_files():
     try:
         import glob
@@ -1080,7 +1108,10 @@ def cleanup_temp_files():
                 pass
     except Exception as e:
         logging.error(f"Ошибка при очистке временных файлов: {str(e)}")
+
+
 def retry_with_backoff(func, max_retries=3, initial_delay=1):
+
     def wrapper(*args, **kwargs):
         delay = initial_delay
         for attempt in range(max_retries):
@@ -1092,8 +1123,12 @@ def retry_with_backoff(func, max_retries=3, initial_delay=1):
                 logging.warning(f"Попытка {attempt + 1} не удалась: {str(e)}")
                 time.sleep(delay)
                 delay *= 2
+
     return wrapper
+
+
 class ResultsCache:
+
     def __init__(self, cache_file="search_cache.json"):
         self.cache_file = cache_file
         self.cache = self._load_cache()
