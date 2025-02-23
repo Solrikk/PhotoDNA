@@ -760,26 +760,35 @@ def start_processing(album_url):
 def create_gui():
     root = tk.Tk()
     root.title("PhotoDNA - Анализ схожих изображений")
-    root.geometry("900x500")
-    root.configure(bg="#f0f2f5")
+    root.geometry("1000x600")
+    root.configure(bg="#1e1e2e")
     root.resizable(False, False)
 
     style = ttk.Style()
     style.theme_use('default')
-    style.configure("TLabel", font=("Segoe UI", 12), background="#f0f2f5")
-    style.configure("TEntry", font=("Segoe UI", 11))
+    style.configure("TLabel", 
+                   font=("Montserrat", 12), 
+                   background="#1e1e2e",
+                   foreground="#ffffff")
+    style.configure("TEntry", 
+                   font=("Montserrat", 11),
+                   fieldbackground="#2d2d3f",
+                   foreground="#ffffff",
+                   insertcolor="#ffffff")
     style.configure("TButton",
-                    font=("Segoe UI", 11, "bold"),
-                    padding=10,
-                    background="#0066cc")
+                   font=("Montserrat", 11, "bold"),
+                   padding=12,
+                   background="#7c3aed",
+                   foreground="#ffffff")
     style.configure("Header.TLabel",
-                    font=("Segoe UI", 24, "bold"),
-                    foreground="#1a1a1a",
-                    background="#f0f2f5")
-    style.configure("Main.TFrame", background="#f0f2f5")
+                   font=("Montserrat", 28, "bold"),
+                   foreground="#ffffff",
+                   background="#1e1e2e")
+    style.configure("Main.TFrame", 
+                   background="#1e1e2e")
     style.configure("Blue.Horizontal.TProgressbar",
-                    background="#0066cc",
-                    troughcolor="#e6e6e6")
+                   background="#7c3aed",
+                   troughcolor="#2d2d3f")
 
     main_frame = ttk.Frame(root, padding=30, style="Main.TFrame")
     main_frame.pack(fill=tk.BOTH, expand=True)
@@ -802,17 +811,34 @@ def create_gui():
                       font=("Segoe UI", 11))
     label.pack(pady=(0, 8))
 
-    entry = ttk.Entry(input_frame, width=80, font=("Segoe UI", 11))
-    entry.pack(pady=(0, 5))
-
+    entry_style = ttk.Style()
+    entry_style.configure("Custom.TEntry",
+                         fieldbackground="#2d2d3f",
+                         foreground="#ffffff",
+                         insertcolor="#ffffff",
+                         borderwidth=0)
+    
+    entry_frame = ttk.Frame(input_frame, style="Main.TFrame")
+    entry_frame.pack(pady=(0, 5))
+    
+    entry = ttk.Entry(entry_frame, 
+                     width=80, 
+                     font=("Montserrat", 11),
+                     style="Custom.TEntry")
+    entry.pack(pady=(0, 5), ipady=8)
+    
     def show_context_menu(event):
         context_menu.tk_popup(event.x_root, event.y_root)
 
-    context_menu = tk.Menu(root, tearoff=0)
+    context_menu = tk.Menu(root, tearoff=0, bg="#2d2d3f", fg="#ffffff")
     context_menu.add_command(label="Вставить",
-                             command=lambda: entry.event_generate("<<Paste>>"))
+                           command=lambda: entry.event_generate("<<Paste>>"),
+                           activebackground="#7c3aed",
+                           activeforeground="#ffffff")
     context_menu.add_command(label="Копировать",
-                             command=lambda: entry.event_generate("<<Copy>>"))
+                           command=lambda: entry.event_generate("<<Copy>>"),
+                           activebackground="#7c3aed",
+                           activeforeground="#ffffff")
     entry.bind("<Button-3>", show_context_menu)
 
     progress_frame = ttk.Frame(main_frame, style="Main.TFrame")
