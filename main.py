@@ -38,10 +38,10 @@ import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 import multiprocessing
 
-WAIT_TIME = 20
+WAIT_TIME = 10
 RESULTS_FILE = 'results.xlsx'
 SIMILARITY_THRESHOLD = 0.89
-MAX_ADDITIONAL_IMAGES = 3
+MAX_ADDITIONAL_IMAGES = 2
 MAX_TOTAL_RECORDS = 2000
 MAX_ADDITIONAL_SEARCHES_PER_IMAGE = 2
 
@@ -526,7 +526,7 @@ def vk_login(driver):
         password_input.send_keys("straleglans-qwE1solrikksolrikk")
         password_input.submit()
 
-        time.sleep(5)
+        time.sleep(2)
 
     except Exception as e:
         logging.error(f"Ошибка при авторизации ВКонтакте: {str(e)}")
@@ -747,8 +747,7 @@ def process_images(album_url):
                                 cell.hyperlink = url
                                 cell.style = "Hyperlink"
                 if 'Схожесть' in df.columns:
-                    similarity_col = df.columns.get_loc('Схожесть') + 1
-                    for row in range(2, len(df) + 2):
+                    similarity_col = df.columns.get_loc('Схожесть') + 1                    for row in range(2, len(df) + 2):
                         similarity_value = df.iloc[row - 2]['Схожесть']
                         try:
                             similarity_percent = float(similarity_value)
