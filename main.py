@@ -1,4 +1,75 @@
-     'Дата публикации', 'Текст поста', 'Переслано от',
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import ttk
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
+import pandas as pd
+import logging
+import os
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from openpyxl.utils import get_column_letter
+
+RESULTS_FILE = "results.xlsx"
+SIMILARITY_THRESHOLD = 0.85
+
+logging.basicConfig(filename='log.txt', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+def process_images(album_url):
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless=new")  # Запуск Chrome в headless режиме
+    driver = webdriver.Chrome(options=options)
+    driver.get(album_url)
+    try:
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body")))
+    except TimeoutException:
+        logging.error("Страница не загрузилась за отведенное время.")
+        messagebox.showerror("Ошибка", "Не удалось загрузить страницу.")
+        return
+
+    data = []
+    try:
+        while True:
+            images = driver.find_elements(By.TAG_NAME, "img")
+            for img in images:
+                try:
+                    src = img.get_attribute("src")
+                    if src:
+                        data.append({'URL исходного фото': src})
+                except:
+                    pass
+            last_height = driver.execute_script(
+                "return document.body.scrollHeight")
+            scroll_attempt = 0
+            max_scroll_attempts = 5  # Установлено 5 попыток прокрутки
+            while scroll_attempt < max_scroll_attempts:
+                driver.execute_script(
+                    "window.scrollTo(0, document.body.scrollHeight);")
+                try:
+                    WebDriverWait(driver, 5).until(
+                        lambda driver: driver.execute_script(
+                            "return document.body.scrollHeight") > last_height)
+                    last_height = driver.execute_script(
+                        "return document.body.scrollHeight")
+                    logging.info(f"Прокрутка вниз... Попытка {scroll_attempt + 1}")
+                    scroll_attempt +=1
+
+                except TimeoutException:
+                    logging.info("Новый контент не загружен.")
+                    break
+            if last_height == driver.execute_script(
+                    "return document.body.scrollHeight"):
+                break
+
+
+        df = pd.DataFrame(data)
+        if not df.empty:
+            for col in ['Дата публикации', 'Текст поста', 'Переслано от',
                     'Заголовок', 'IP адрес'
             ]:
                 if col not in df.columns:
