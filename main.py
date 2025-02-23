@@ -502,11 +502,53 @@ def search_yandex_image(driver, image_path, matcher, source_embedding,
         driver.save_screenshot('yandex_step_search_error.png')
 
 
+def vk_login(driver):
+    try:
+        wait = WebDriverWait(driver, WAIT_TIME)
+        
+        # Ждем кнопку "Войти другим способом"
+        other_login_btn = wait.until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Войти другим способом')]")))
+        other_login_btn.click()
+        
+        # Ввод номера телефона
+        phone_input = wait.until(
+            EC.presence_of_element_located((By.NAME, "login")))
+        phone_input.clear()
+        phone_input.send_keys("+79275088557")
+        
+        # Ждем и вводим пароль
+        password_input = wait.until(
+            EC.presence_of_element_located((By.NAME, "password")))
+        password_input.send_keys("straleglans-qwE1solrikksolrikk")
+        password_input.submit()
+        
+        # Ждем успешной авторизации
+        time.sleep(5)
+        
+    except Exception as e:
+        logging.error(f"Ошибка при авторизации ВКонтакте: {str(e)}")
+        raise
+
 def extract_vk_album_photos(driver, album_url):
     try:
         driver.get(album_url)
         logging.info(f"Переход на страницу альбома ВКонтакте: {album_url}")
+        
+        # Проверяем необходимость авторизации
+        try:
+            login_button = driver.find_element(By.XPATH, "//button[contains(., 'Войти другим способом')]")
+            if login_button:
+                logging.info("Требуется авторизация ВКонтакте")
+                vk_login(driver)
+                # Возвращаемся на страницу альбома после авторизации
+                driver.get(album_url)
+        except:
+            logging.info("Авторизация не требуется")
+            
         wait = WebDriverWait(driver, WAIT_TIME)
+        # Ждем загрузку альбома
+        time.sleep(10)
         wait.until(
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, "a[href*='/photo-']")))
