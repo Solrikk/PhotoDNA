@@ -505,24 +505,23 @@ def search_yandex_image(driver, image_path, matcher, source_embedding,
 
 def vk_login(driver):
     try:
+        vk_login = os.getenv('VK_LOGIN')
+        vk_password = os.getenv('VK_PASSWORD')
+        
+        if not vk_login or not vk_password:
+            raise Exception("VK_LOGIN или VK_PASSWORD не найдены в переменных окружения")
+            
         wait = WebDriverWait(driver, WAIT_TIME)
-        #####################################
-        # Ждем кнопку "Войти другим способом"
-        #####################################
         other_login_btn = wait.until(
             EC.element_to_be_clickable(
                 (By.XPATH, "//button[contains(., 'Войти другим способом')]")))
         other_login_btn.click()
-        #####################################
-        # Ввод номера телефона
-        #####################################
+        
         phone_input = wait.until(
             EC.presence_of_element_located((By.NAME, "login")))
         phone_input.clear()
         phone_input.send_keys(vk_login)
-        #####################################
-        # Ждем и вводим пароль
-        #####################################
+        
         password_input = wait.until(
             EC.presence_of_element_located((By.NAME, "password")))
         password_input.send_keys(vk_password)
