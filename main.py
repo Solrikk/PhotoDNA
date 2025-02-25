@@ -37,7 +37,6 @@ import socket
 from sklearn.feature_extraction.text import TfidfVectorizer
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
-import multiprocessing
 
 WAIT_TIME = 10
 RESULTS_FILE = 'results.xlsx'
@@ -1114,43 +1113,3 @@ def cleanup_temp_files():
         logging.error(f"Ошибка при очистке временных файлов: {str(e)}")
 
 
-def retry_with_backoff(func, max_retries=3, initial_delay=1):
-
-    def wrapper(*args, **kwargs):
-        delay = initial_delay
-        for attempt in range(max_retries):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                if attempt == max_retries - 1:
-                    raise
-                logging.warning(f"Попытка {attempt + 1} не удалась: {str(e)}")
-                time.sleep(delay)
-                delay *= 2
-
-    return wrapper
-
-
-class ResultsCache:
-
-    def __init__(self, cache_file="search_cache.json"):
-        self.cache_file = cache_file
-        self.cache = self._load_cache()
-
-    def _load_cache(self):
-        try:
-            with open(self.cache_file, 'r') as f:
-                return json.load(f)
-        except:
-            return {}
-
-    def save_cache(self):
-        with open(self.cache_file, 'w') as f:
-            json.dump(self.cache, f)
-
-    def get_result(self, url_hash):
-        return self.cache.get(url_hash)
-
-    def add_result(self, url_hash, result):
-        self.cache[url_hash] = result
-        self.save_cache()
