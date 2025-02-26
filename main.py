@@ -38,14 +38,14 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 
-WAIT_TIME = 10
+WAIT_TIME = 5
 RESULTS_FILE = 'results.xlsx'
 SIMILARITY_THRESHOLD = 0.89
-MAX_ADDITIONAL_IMAGES = 2
+MAX_ADDITIONAL_IMAGES = 1
 MAX_TOTAL_RECORDS = 2000
-MAX_ADDITIONAL_SEARCHES_PER_IMAGE = 2
+MAX_ADDITIONAL_SEARCHES_PER_IMAGE = 1
 
-NUM_PARALLEL_PROCESSES = 4
+NUM_PARALLEL_PROCESSES = 8
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -76,7 +76,7 @@ class ImageMatcher:
             if isinstance(img_path, str):
                 img = image.load_img(img_path, target_size=(224, 224))
             else:
-                img = img_path.resize((224, 224), Image.Resampling.LANCZOS)
+                img = img_path.resize((224, 224), Image.Resampling.NEAREST)
             x = np.asarray(img, dtype=np.float32)
             x = np.expand_dims(x, axis=0)
             return preprocess_input(x)
@@ -118,7 +118,7 @@ class ImageMatcher:
 
     def download_and_process_image(self, url):
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=5)
             img = Image.open(BytesIO(response.content)).convert('RGB')
             return self.get_embedding(img)
         except Exception as e:
@@ -127,7 +127,7 @@ class ImageMatcher:
 
     def fetch_page_text(self, url):
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=5)
             soup = BeautifulSoup(response.content, 'html.parser')
             texts = soup.stripped_strings
             return ' '.join(texts)
@@ -259,7 +259,7 @@ def perform_additional_search(driver, query, matcher, data_list,
                     ip_address = get_ip_address(site_link)
                     if ip_address and ip_address not in processed_ips:
                         processed_ips.add(ip_address)
-                        response = requests.get(site_link, timeout=10)
+                        response = requests.get(site_link, timeout=5)
                         soup = BeautifulSoup(response.content, 'html.parser')
                         img_tag = soup.find('img')
                         if img_tag and img_tag.get('src'):
@@ -301,32 +301,32 @@ def collect_similar_images(driver, wait, matcher, source_embedding, image_name,
                            data_list, record_counter, original_photo_url):
     try:
         try:
-            time.sleep(5)
+            time.sleep(1)
             more_button = wait.until(
                 EC.element_to_be_clickable(
                     (By.CLASS_NAME, "CbirSites-MoreButton")))
             click_element_js(driver, more_button)
             logging.info("Нажата кнопка 'Показать все' на Яндексе.")
             driver.save_screenshot('yandex_step_clicked_more.png')
-            time.sleep(5)
+            time.sleep(1)
         except Exception as e:
             logging.error(f"Не удалось нажать кнопку 'Показать все': {str(e)}")
         last_height = driver.execute_script(
             "return document.body.scrollHeight")
         scroll_attempt = 0
-        max_scroll_attempts = 8
+        max_scroll_attempts = 5
         while scroll_attempt < max_scroll_attempts:
             current_height = driver.execute_script(
                 "return window.pageYOffset;")
             scroll_height = driver.execute_script(
                 "return document.body.scrollHeight;")
-            step = (scroll_height - current_height) / 4
-            for i in range(4):
+            step = (scroll_height - current_height) / 2
+            for i in range(2):
                 driver.execute_script(
                     f"window.scrollTo(0, {current_height + step * (i+1)});")
-                time.sleep(1)
+                time.sleep(0.2)
             logging.info(f"Прокрутка вниз... Попытка {scroll_attempt + 1}")
-            time.sleep(3)
+            time.sleep(1)
             new_height = driver.execute_script(
                 "return document.body.scrollHeight")
             if new_height == last_height:
@@ -506,21 +506,21 @@ def vk_login(driver):
     try:
         vk_login = os.getenv('VK_LOGIN')
         vk_password = os.getenv('VK_PASSWORD')
-        
+
         if not vk_login or not vk_password:
             raise Exception("VK_LOGIN или VK_PASSWORD не найдены в переменных окружения")
-            
+
         wait = WebDriverWait(driver, WAIT_TIME)
         other_login_btn = wait.until(
             EC.element_to_be_clickable(
                 (By.XPATH, "//button[contains(., 'Войти другим способом')]")))
         other_login_btn.click()
-        
+
         phone_input = wait.until(
             EC.presence_of_element_located((By.NAME, "login")))
         phone_input.clear()
         phone_input.send_keys(vk_login)
-        
+
         password_input = wait.until(
             EC.presence_of_element_located((By.NAME, "password")))
         password_input.send_keys(vk_password)
@@ -554,7 +554,7 @@ def extract_vk_album_photos(driver, album_url):
             logging.info("Авторизация не требуется")
 
         wait = WebDriverWait(driver, WAIT_TIME)
-        time.sleep(10)
+        time.sleep(2)
         wait.until(
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, "a[href*='/photo-']")))
@@ -563,12 +563,12 @@ def extract_vk_album_photos(driver, album_url):
             "return document.body.scrollHeight")
         scroll_attempt = 0
         #####################################
-        max_scroll_attempts = 8  # Уменьшено количество попыток прокрутки
+        max_scroll_attempts = 3  # Уменьшено количество попыток прокрутки
         #####################################
         while scroll_attempt < max_scroll_attempts:
             driver.execute_script(
                 "window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(3)  # Increased delay to allow more photos to load
+            time.sleep(1)  # Minimal delay for photos to load
             new_height = driver.execute_script(
                 "return document.body.scrollHeight")
             if new_height == last_height:
@@ -626,7 +626,7 @@ def process_image_chunk(photo_urls_chunk, matcher, driver, all_data,
             img_url = extract_vk_photo_url(driver, photo_url)
             if not img_url:
                 continue
-            response = requests.get(img_url, timeout=10)
+            response = requests.get(img_url, timeout=5)
             img = Image.open(BytesIO(response.content)).convert('RGB')
             temp_image_path = f"temp_image_{hash(photo_url)}.jpg"
             img.save(temp_image_path)
@@ -643,6 +643,8 @@ def process_image_chunk(photo_urls_chunk, matcher, driver, all_data,
             continue
 
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 def process_images(album_url, vk_login, vk_password, show_completion=True):
     if not (album_url.startswith("https://vk.com/album")
             or album_url.startswith("https://vk.com/photo")):
@@ -650,54 +652,68 @@ def process_images(album_url, vk_login, vk_password, show_completion=True):
             "Некорректная ссылка. Пожалуйста, введите ссылку на альбом или фотографию ВКонтакте."
         )
         return
+
+    def process_single_photo(photo_data):
+        try:
+            photo_url, idx, total = photo_data
+            driver = setup_browser()
+            matcher = ImageMatcher()
+            try:
+                logging.info(f"Обработка фотографии {idx}/{total}: {photo_url}")
+                img_url = extract_vk_photo_url(driver, photo_url)
+                if not img_url:
+                    return None
+                response = requests.get(img_url, timeout=5)
+                img = Image.open(BytesIO(response.content)).convert('RGB')
+                temp_image_path = f"temp_image_{idx}.jpg"
+                img.save(temp_image_path)
+                source_embedding = matcher.get_embedding(temp_image_path)
+                if source_embedding is None:
+                    os.remove(temp_image_path)
+                    return None
+                results = []
+                search_yandex_image(driver, temp_image_path, matcher,
+                                    source_embedding, f"Фото {idx}",
+                                    results, [0], img_url)
+                os.remove(temp_image_path)
+                return results
+            finally:
+                driver.quit()
+        except Exception as e:
+            logging.error(f"Ошибка при обработке фото {photo_url}: {str(e)}")
+            return None
     matcher = ImageMatcher()
     driver = setup_browser()
     all_data = []
     record_counter = [0]
     try:
         if album_url.startswith("https://vk.com/album"):
+            driver = setup_browser()
             photo_urls = extract_vk_album_photos(driver, album_url)
+            driver.quit()
+
             if not photo_urls:
                 logging.info("Не удалось извлечь фотографии из альбома.")
                 return
-            for idx, photo_url in enumerate(photo_urls, 1):
-                try:
-                    logging.info(
-                        f"Обработка фотографии {idx}/{len(photo_urls)}: {photo_url}"
-                    )
-                    img_url = extract_vk_photo_url(driver, photo_url)
-                    if not img_url:
-                        logging.warning(
-                            f"Не удалось извлечь URL фотографии: {photo_url}. Пропуск."
-                        )
+
+            all_data = []
+            with ThreadPoolExecutor(max_workers=4) as executor:
+                photo_data = [(url, idx, len(photo_urls))
+                              for idx, url in enumerate(photo_urls, 1)]
+                future_to_photo = {executor.submit(process_single_photo, data): data
+                                   for data in photo_data}
+
+                for future in as_completed(future_to_photo):
+                    photo_data = future_to_photo[future]
+                    try:
+                        results = future.result()
+                        if results:
+                            all_data.extend(results)
+                    except Exception as e:
+                        logging.error(
+                            f"Ошибка при обработке фото {photo_data[0]}: {str(e)}")
                         continue
-                    response = requests.get(img_url, timeout=10)
-                    img = Image.open(BytesIO(response.content)).convert('RGB')
-                    temp_image_path = f"temp_image_{idx}.jpg"
-                    img.save(temp_image_path)
-                    source_embedding = matcher.get_embedding(temp_image_path)
-                    if source_embedding is None:
-                        logging.warning(
-                            f"Не удалось извлечь эмбеддинг для: {img_url}. Пропуск."
-                        )
-                        os.remove(temp_image_path)
-                        continue
-                    logging.info(f"Извлечён эмбеддинг для: {img_url}")
-                    search_yandex_image(driver, temp_image_path, matcher,
-                                        source_embedding, f"Фото {idx}",
-                                        all_data, record_counter, img_url)
-                    os.remove(temp_image_path)
-                    if record_counter[0] >= MAX_TOTAL_RECORDS:
-                        logging.info(
-                            f"Достигнуто максимальное количество записей: {MAX_TOTAL_RECORDS}"
-                        )
-                        break
-                    time.sleep(1)
-                except Exception as e:
-                    logging.error(
-                        f"Ошибка при обработке фотографии {photo_url}: {str(e)}"
-                    )
-                    continue
+
         elif album_url.startswith("https://vk.com/photo"):
             img_url = extract_vk_photo_url(driver, album_url)
             if not img_url:
@@ -705,7 +721,7 @@ def process_images(album_url, vk_login, vk_password, show_completion=True):
                 return
             try:
                 logging.info(f"Обработка фотографии: {img_url}")
-                response = requests.get(img_url, timeout=10)
+                response = requests.get(img_url, timeout=5)
                 img = Image.open(BytesIO(response.content)).convert('RGB')
                 temp_image_path = "temp_image_single.jpg"
                 img.save(temp_image_path)
@@ -1111,5 +1127,3 @@ def cleanup_temp_files():
                 pass
     except Exception as e:
         logging.error(f"Ошибка при очистке временных файлов: {str(e)}")
-
-
