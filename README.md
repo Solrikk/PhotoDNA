@@ -56,7 +56,3 @@ PhotoDNA - это инструмент для поиска, анализа и с
 - TensorFlow 2.x
 - Microsoft Edge или совместимый браузер
 - Доступ в интернет
-
-## Автор
-
-[Solrikk](https://github.com/Solrikk)
