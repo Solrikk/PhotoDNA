@@ -1,13 +1,13 @@
 
-# PhotoDNA
+# Web-PicTrace
 
-![GitHub license](https://img.shields.io/github/license/Solrikk/PhotoDNA?style=flat&logo=github)
+![GitHub license](https://img.shields.io/github/license/Solrikk/Web-PicTrace?style=flat&logo=github)
 ![Python](https://img.shields.io/badge/Python-3.7%2B-blue?style=flat&logo=python)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange?style=flat&logo=tensorflow)
 
 ## О проекте
 
-PhotoDNA - это инструмент для поиска, анализа и сравнения изображений с использованием алгоритмов машинного обучения. Система позволяет находить дубликаты и похожие изображения в социальных сетях, определять первоисточники контента и анализировать медиаданные.
+Web-PicTrace - это инструмент для поиска, анализа и сравнения изображений с использованием алгоритмов машинного обучения. Система позволяет находить дубликаты и похожие изображения в социальных сетях, определять первоисточники контента и анализировать медиаданные.
 
 ## Функциональные возможности
 
